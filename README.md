@@ -1,6 +1,6 @@
 # douga
 
-An open source fun screen recorder. Work in progress.
+A fun open-source screen recorder. Work in progress.
 
 ## Recommended IDE Setup
 
