@@ -1,6 +1,6 @@
 # douga
 
-An Electron application with React and TypeScript
+An open source fun screen recorder. Work in progress.
 
 ## Recommended IDE Setup
 
