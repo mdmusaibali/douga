@@ -5,7 +5,7 @@ import 'primereact/resources/themes/vela-blue/theme.css'
 import 'primereact/resources/primereact.min.css'
 import 'primeicons/primeicons.css'
 
-ReactDOM.createRoot(document.getElementById('root') as HTMLElement).render(
+ReactDOM.createRoot(document.getElementById('root')).render(
   <PrimeReactProvider>
     <App />
   </PrimeReactProvider>

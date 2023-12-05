@@ -5,7 +5,7 @@ import { electronApp, optimizer, is } from '@electron-toolkit/utils'
 import icon from '../../resources/icon.png?asset'
 import { channels } from '../shared'
 
-function createWindow(): void {
+function createWindow() {
   // Create the browser window.
   const mainWindow = new BrowserWindow({
     show: false,
@@ -90,7 +90,7 @@ ipcMain.on(channels.SET_SOURCE, async (e) => {
   videoOptionsMenu.popup()
 })
 
-ipcMain.on(channels.SAVE_FILE, async (e, arrayBuffer: any) => {
+ipcMain.on(channels.SAVE_FILE, async (e, arrayBuffer) => {
   try {
     const buffer = Buffer.from(arrayBuffer)
 

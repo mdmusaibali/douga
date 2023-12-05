@@ -4,12 +4,12 @@ import { useEffect, useRef, useState } from 'react'
 
 const { ipcRenderer } = electron
 
-function App(): JSX.Element {
+function App(){
   const videoRef = useRef(null)
-  const [mediaRecorder, setMediaRecorder] = useState<any>('')
-  const videoChunks: any[] = []
+  const [mediaRecorder, setMediaRecorder] = useState('')
+  const videoChunks = []
 
-  async function handleStream(_: any, source: any) {
+  async function handleStream(_, source) {
     try {
       const stream = await navigator.mediaDevices.getUserMedia({
         audio: false,
@@ -52,7 +52,7 @@ function App(): JSX.Element {
     }
   }, [])
 
-  const handleError = (e: any) => {
+  const handleError = (e) => {
     console.error('ERROR ', e)
   }
 
@@ -70,7 +70,7 @@ function App(): JSX.Element {
     }
   }
 
-  const handleDataAvailable = (e: any) => {
+  const handleDataAvailable = (e) => {
     console.log('Pushing chunk ', e.data)
     videoChunks.push(e.data)
   }
