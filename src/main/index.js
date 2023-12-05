@@ -18,7 +18,6 @@ function createWindow() {
       contextIsolation: true
     }
   })
-  console.log(app.getPath('videos'))
 
   mainWindow.on('ready-to-show', () => {
     mainWindow.show()
@@ -73,21 +72,12 @@ app.on('window-all-closed', () => {
 // In this file you can include the rest of your app"s specific main process
 // code. You can also put them in separate files and require them here.
 
-ipcMain.on(channels.SET_SOURCE, async (e) => {
+ipcMain.on(channels.GET_SOURCES, async (e) => {
   const inputSources = await desktopCapturer.getSources({
     types: ['window', 'screen']
   })
 
-  const videoOptionsMenu = Menu.buildFromTemplate(
-    inputSources.map((source) => {
-      return {
-        label: source.name,
-        click: () => e.sender.send(channels.SET_SOURCE, source)
-      }
-    })
-  )
-
-  videoOptionsMenu.popup()
+  e.sender.send(channels.GET_SOURCES, inputSources)
 })
 
 ipcMain.on(channels.SAVE_FILE, async (e, arrayBuffer) => {

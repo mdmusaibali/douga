@@ -1,0 +1,16 @@
+.home {
+  display: flex;
+  height: 100vh;
+
+  &__aside {
+    display: flex;
+    flex-direction: column;
+    overflow: auto;
+    width: 400px;
+  }
+
+  &__main {
+    display: flex;
+    flex: 1;
+  }
+}
