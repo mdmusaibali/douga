@@ -38,6 +38,7 @@
     "react-dom": "^18.2.0",
     "react-router-dom": "^6.20.1",
     "sass": "^1.69.5",
-    "vite": "^4.4.9"
+    "vite": "^4.4.9",
+    "vite-plugin-svgr": "^4.2.0"
   }
 }

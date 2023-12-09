@@ -1,5 +1,5 @@
 import { app, shell, BrowserWindow, ipcMain, desktopCapturer, Menu, dialog } from 'electron'
-import { writeFile } from 'fs'
+import { writeFile, readdirSync, statSync } from 'fs'
 import { join } from 'path'
 import { electronApp, optimizer, is } from '@electron-toolkit/utils'
 import icon from '../../resources/icon.png?asset'
@@ -96,3 +96,23 @@ ipcMain.on(channels.SAVE_FILE, async (e, arrayBuffer) => {
     console.log('Error saving video file ', error)
   }
 })
+
+// Function to build the file tree recursively
+function buildFileTree(directoryPath) {
+  const files = readdirSync(directoryPath)
+  const children = files.map((fileName) => {
+    const filePath = path.join(directoryPath, fileName)
+    const stats = statSync(filePath)
+    if (stats.isDirectory()) {
+      return {
+        name: fileName,
+        children: buildFileTree(filePath)
+      }
+    } else {
+      return {
+        name: fileName
+      }
+    }
+  })
+  return children
+}

@@ -8,10 +8,12 @@ const { ipcRenderer } = electron
 
 function Recorder() {
   const [mediaRecorder, setMediaRecorder] = useState('')
-  const videoChunks = []
+  let videoChunks = []
   const [stream, setStream] = useState(null)
   const [sources, setSources] = useState([])
   const [selectedSource, setSelectedSource] = useState(null)
+  const [isRecording, setIsRecording] = useState(false)
+  const [isPaused, setIsPaused] = useState(false)
 
   const handleSources = (_, sources) => {
     setSources(sources)
@@ -38,6 +40,7 @@ function Recorder() {
         const mediaRecorder = new MediaRecorder(stream, options)
         // Register Event Handlers
         mediaRecorder.ondataavailable = handleDataAvailable
+        mediaRecorder.onstart = handleStart
         mediaRecorder.onstop = handleStop
         setMediaRecorder(mediaRecorder)
         setStream(stream)
@@ -55,8 +58,15 @@ function Recorder() {
     setSelectedSource(e.value)
   }
 
-  useEffect(() => {
+  const getScreenSources = () => {
+    if (selectedSource) {
+      setSelectedSource(null)
+    }
     ipcRenderer.send(channels.GET_SOURCES)
+  }
+
+  useEffect(() => {
+    getScreenSources()
     ipcRenderer.on(channels.GET_SOURCES, handleSources)
     // Clean the listener after the component is dismounted
     return () => {
@@ -78,21 +88,50 @@ function Recorder() {
     }
   }
 
+  const pauseRecording = () => {
+    if (mediaRecorder) {
+      mediaRecorder.pause()
+      setIsPaused(true)
+      console.log('Recording paused')
+    }
+  }
+
+  const resumeRecording = () => {
+    if (mediaRecorder) {
+      mediaRecorder.resume()
+      setIsPaused(false)
+      console.log('Recording resumed')
+    }
+  }
+
+  const resetRecorder = () => {
+    videoChunks = []
+    setStream(null)
+    setSelectedSource(null)
+    setIsRecording(false)
+    setIsPaused(false)
+  }
+
   const handleDataAvailable = (e) => {
     console.log('Pushing chunk ', e.data)
     videoChunks.push(e.data)
   }
 
+  const handleStart = () => {
+    setIsRecording(true)
+  }
+
   const handleStop = async () => {
+    setIsRecording(false)
     if (Array.isArray(videoChunks) && videoChunks.length < 1) return
 
-    console.log('VIDEO CHUNKS ', videoChunks)
     const blob = new Blob(videoChunks, {
       type: 'video/webm; codecs=vp9'
     })
     const arrayBuffer = await blob.arrayBuffer()
 
     ipcRenderer.send(channels.SAVE_FILE, arrayBuffer)
+    resetRecorder()
   }
 
   return (
@@ -107,6 +146,12 @@ function Recorder() {
           onChooseSource={onChooseSource}
           onStartRecord={startRecording}
           onStopRecord={stopRecording}
+          onPauseRecord={pauseRecording}
+          onResumeRecord={resumeRecording}
+          onRefreshScreenSources={getScreenSources}
+          isRecording={isRecording}
+          isPaused={isPaused}
+          showScreenOptions={!isRecording}
         />
       </div>
     </div>

@@ -6,3 +6,8 @@ html {
   box-sizing: border-box;
   background-color: var(--surface-a);
 }
+
+/* prime react  */
+.p-card .p-card-content {
+  padding: 0;
+}
