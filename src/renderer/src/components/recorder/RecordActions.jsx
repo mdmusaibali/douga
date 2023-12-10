@@ -18,16 +18,20 @@ function RecordActions({
 }) {
   return (
     <div className="flex gap-3">
-      {isRecording && <RecordTimer isRecording={isRecording} isPaused={isPaused} />}
+      {isRecording && (
+        <div className="flex flex-column">
+          <RecordTimer isRecording={isRecording} isPaused={isPaused} />
+          <p className="my-0 text-s font-light">Recording {selectedSource.name}</p>
+        </div>
+      )}
       {showScreenOptions && (
         <>
           <Button
             severity="secondary"
+            label="Refresh Screens"
             icon="pi pi-refresh"
             size="small"
             onClick={onRefreshScreenSources}
-            tooltip="Refresh Screens"
-            tooltipOptions={{ position: 'top' }}
           />
           <Dropdown
             value={selectedSource}
@@ -43,29 +47,31 @@ function RecordActions({
       {selectedSource && !isRecording && (
         <Button label="Record" severity="danger" size="small" onClick={onStartRecord} />
       )}
-      {selectedSource && isRecording && isPaused && (
-        <Button
-          label="Resume"
-          severity="secondary"
-          size="small"
-          outlined
-          icon="pi pi-play"
-          onClick={onResumeRecord}
-        />
-      )}
-      {selectedSource && isRecording && !isPaused && (
-        <Button
-          label="Pause"
-          severity="secondary"
-          size="small"
-          outlined
-          icon="pi pi-pause"
-          onClick={onPauseRecord}
-        />
-      )}
-      {selectedSource && isRecording && (
-        <Button label="Stop" size="small" severity="danger" onClick={onStopRecord} />
-      )}
+      <div className="flex align-items-center ml-auto gap-3">
+        {selectedSource && isRecording && isPaused && (
+          <Button
+            label="Resume"
+            severity="secondary"
+            size="small"
+            outlined
+            icon="pi pi-play"
+            onClick={onResumeRecord}
+          />
+        )}
+        {selectedSource && isRecording && !isPaused && (
+          <Button
+            label="Pause"
+            severity="secondary"
+            size="small"
+            outlined
+            icon="pi pi-pause"
+            onClick={onPauseRecord}
+          />
+        )}
+        {selectedSource && isRecording && (
+          <Button label="Stop" size="small" severity="danger" onClick={onStopRecord} />
+        )}
+      </div>
     </div>
   )
 }

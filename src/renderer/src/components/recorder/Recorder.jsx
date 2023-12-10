@@ -3,17 +3,19 @@ import { channels } from '../../../../shared'
 import VideoStream from '../video/VideoStream'
 import RecordActions from './RecordActions'
 import styles from './Recorder.module.scss'
+import VideoPlayer from '../video/VideoPlayer'
 
 const { ipcRenderer } = electron
 
 function Recorder() {
   const [mediaRecorder, setMediaRecorder] = useState('')
-  let videoChunks = []
+  const [videoChunks, setVideoChunks] = useState([])
   const [stream, setStream] = useState(null)
   const [sources, setSources] = useState([])
   const [selectedSource, setSelectedSource] = useState(null)
   const [isRecording, setIsRecording] = useState(false)
   const [isPaused, setIsPaused] = useState(false)
+  const [isShowingSaveOptions, setIsShowingSaveOptions] = useState(false)
 
   const handleSources = (_, sources) => {
     setSources(sources)
@@ -105,16 +107,17 @@ function Recorder() {
   }
 
   const resetRecorder = () => {
-    videoChunks = []
+    setVideoChunks([])
     setStream(null)
     setSelectedSource(null)
     setIsRecording(false)
     setIsPaused(false)
+    setIsShowingSaveOptions(false)
   }
 
   const handleDataAvailable = (e) => {
     console.log('Pushing chunk ', e.data)
-    videoChunks.push(e.data)
+    setVideoChunks((prevChunks) => [...prevChunks, e.data])
   }
 
   const handleStart = () => {
@@ -123,6 +126,10 @@ function Recorder() {
 
   const handleStop = async () => {
     setIsRecording(false)
+    setIsShowingSaveOptions(true)
+  }
+
+  const saveRecording = async () => {
     if (Array.isArray(videoChunks) && videoChunks.length < 1) return
 
     const blob = new Blob(videoChunks, {
@@ -132,28 +139,38 @@ function Recorder() {
 
     ipcRenderer.send(channels.SAVE_FILE, arrayBuffer)
     resetRecorder()
+    setIsShowingSaveOptions(false)
   }
 
   return (
     <div className={styles.recorder}>
       <div className={styles.recorder__preview}>
-        <VideoStream stream={stream} />
+        {!isShowingSaveOptions && <VideoStream stream={stream} />}
+        {isShowingSaveOptions && (
+          <VideoPlayer
+            videoChunks={videoChunks}
+            onSave={saveRecording}
+            onStartOver={resetRecorder}
+          />
+        )}
       </div>
-      <div className={styles.recorder__actions}>
-        <RecordActions
-          sources={sources}
-          selectedSource={selectedSource}
-          onChooseSource={onChooseSource}
-          onStartRecord={startRecording}
-          onStopRecord={stopRecording}
-          onPauseRecord={pauseRecording}
-          onResumeRecord={resumeRecording}
-          onRefreshScreenSources={getScreenSources}
-          isRecording={isRecording}
-          isPaused={isPaused}
-          showScreenOptions={!isRecording}
-        />
-      </div>
+      {!isShowingSaveOptions && (
+        <div className={styles.recorder__actions}>
+          <RecordActions
+            sources={sources}
+            selectedSource={selectedSource}
+            onChooseSource={onChooseSource}
+            onStartRecord={startRecording}
+            onStopRecord={stopRecording}
+            onPauseRecord={pauseRecording}
+            onResumeRecord={resumeRecording}
+            onRefreshScreenSources={getScreenSources}
+            isRecording={isRecording}
+            isPaused={isPaused}
+            showScreenOptions={!isRecording}
+          />
+        </div>
+      )}
     </div>
   )
 }

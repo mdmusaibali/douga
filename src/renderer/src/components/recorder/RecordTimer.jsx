@@ -55,7 +55,7 @@ const RecordTimer = ({ isRecording, isPaused }) => {
 
   return (
     <div>
-      <p>{formatTime(time)}</p>
+      <p className="my-0 text-s font-semibold">{formatTime(time)}</p>
     </div>
   )
 }
