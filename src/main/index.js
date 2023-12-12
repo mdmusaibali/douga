@@ -1,17 +1,23 @@
-import { app, shell, BrowserWindow, ipcMain, desktopCapturer, Menu, dialog } from 'electron'
+import { app, shell, BrowserWindow, ipcMain, desktopCapturer, dialog } from 'electron'
 import { writeFile, readdirSync, statSync } from 'fs'
 import { join } from 'path'
 import { electronApp, optimizer, is } from '@electron-toolkit/utils'
 import icon from '../../resources/icon.png?asset'
 import { channels } from '../shared'
 
+// Windows
+let window1
+let window2
+
 function createWindow() {
   // Create the browser window.
-  const mainWindow = new BrowserWindow({
+  window1 = new BrowserWindow({
     show: false,
-    fullscreen: true,
+    fullscreen: false,
     autoHideMenuBar: true,
     ...(process.platform === 'linux' ? { icon } : {}),
+    width: 1200,
+    height: 800,
     webPreferences: {
       preload: join(__dirname, '../preload/index.js'),
       sandbox: false,
@@ -19,11 +25,15 @@ function createWindow() {
     }
   })
 
-  mainWindow.on('ready-to-show', () => {
-    mainWindow.show()
+  window1.on('ready-to-show', () => {
+    window1.show()
   })
 
-  mainWindow.webContents.setWindowOpenHandler((details) => {
+  window1.on('closed', () => {
+    app.quit()
+  })
+
+  window1.webContents.setWindowOpenHandler((details) => {
     shell.openExternal(details.url)
     return { action: 'deny' }
   })
@@ -31,9 +41,36 @@ function createWindow() {
   // HMR for renderer base on electron-vite cli.
   // Load the remote URL for development or the local html file for production.
   if (is.dev && process.env['ELECTRON_RENDERER_URL']) {
-    mainWindow.loadURL(process.env['ELECTRON_RENDERER_URL'])
+    window1.loadURL(process.env['ELECTRON_RENDERER_URL'])
   } else {
-    mainWindow.loadFile(join(__dirname, '../renderer/index.html'))
+    window1.loadFile(join(__dirname, '../renderer/index.html'))
+  }
+}
+
+function createRecordActionsWindow() {
+  // Create the browser window.
+  window2 = new BrowserWindow({
+    show: false,
+    fullscreen: false,
+    autoHideMenuBar: true,
+    width: 750,
+    height: 56,
+    // frame: false,
+    webPreferences: {
+      preload: join(__dirname, '../preload/index.js'),
+      sandbox: false,
+      contextIsolation: true
+    }
+  })
+
+  window2.on('ready-to-show', () => {
+    window2.show()
+  })
+
+  if (is.dev) {
+    window2.loadURL(process.env['ELECTRON_RENDERER_URL'] + '/login')
+  } else {
+    window2.loadFile(join(__dirname, '../renderer/record-actions.html'))
   }
 }
 
@@ -95,6 +132,24 @@ ipcMain.on(channels.SAVE_FILE, async (e, arrayBuffer) => {
   } catch (error) {
     console.log('Error saving video file ', error)
   }
+})
+
+ipcMain.on(channels.OPEN_RECORD_ACTION_WINDOW, async (e) => {
+  createRecordActionsWindow()
+})
+
+ipcMain.on(channels.CLOSE_RECORD_ACTION_WINDOW, async (e) => {
+  if (window2) {
+    window2.close()
+  }
+})
+
+ipcMain.on(channels.PAUSE_RECORDING, async (e) => {
+  window1.webContents.send(channels.PAUSE_RECORDING)
+})
+
+ipcMain.on(channels.RESUME_RECORDING, async (e) => {
+  window1.webContents.send(channels.RESUME_RECORDING)
 })
 
 // Function to build the file tree recursively

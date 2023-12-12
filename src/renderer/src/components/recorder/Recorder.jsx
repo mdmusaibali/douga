@@ -8,7 +8,7 @@ import VideoPlayer from '../video/VideoPlayer'
 const { ipcRenderer } = electron
 
 function Recorder() {
-  const [mediaRecorder, setMediaRecorder] = useState('')
+  const [mediaRecorder, setMediaRecorder] = useState(null)
   const [videoChunks, setVideoChunks] = useState([])
   const [stream, setStream] = useState(null)
   const [sources, setSources] = useState([])
@@ -70,6 +70,8 @@ function Recorder() {
   useEffect(() => {
     getScreenSources()
     ipcRenderer.on(channels.GET_SOURCES, handleSources)
+    ipcRenderer.on(channels.PAUSE_RECORDING, pauseRecording)
+    ipcRenderer.on(channels.RESUME_RECORDING, resumeRecording)
     // Clean the listener after the component is dismounted
     return () => {
       ipcRenderer.removeAllListeners()
@@ -79,6 +81,7 @@ function Recorder() {
   const startRecording = () => {
     if (mediaRecorder) {
       mediaRecorder.start()
+      // ipcRenderer.send(channels.OPEN_RECORD_ACTION_WINDOW)
       console.log('Recording started')
     }
   }
@@ -86,11 +89,13 @@ function Recorder() {
   const stopRecording = () => {
     if (mediaRecorder) {
       mediaRecorder.stop()
+      // ipcRenderer.send(channels.CLOSE_RECORD_ACTION_WINDOW)
       console.log('Recording stopped')
     }
   }
 
   const pauseRecording = () => {
+    console.log(mediaRecorder, sources, selectedSource)
     if (mediaRecorder) {
       mediaRecorder.pause()
       setIsPaused(true)

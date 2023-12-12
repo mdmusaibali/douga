@@ -7,9 +7,13 @@ import 'primereact/resources/primereact.min.css'
 import 'primeicons/primeicons.css'
 import './assets/base.css'
 import 'primeflex/primeflex.css'
+import { Provider } from 'react-redux'
+import { store } from './store'
 
 ReactDOM.createRoot(document.getElementById('root')).render(
-  <PrimeReactProvider>
-    <App />
-  </PrimeReactProvider>
+  <Provider store={store}>
+    <PrimeReactProvider>
+      <App />
+    </PrimeReactProvider>
+  </Provider>
 )

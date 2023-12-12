@@ -19,11 +19,14 @@
   "dependencies": {
     "@electron-toolkit/preload": "^2.0.0",
     "@electron-toolkit/utils": "^2.0.0",
+    "@reduxjs/toolkit": "^2.0.1",
     "electron-updater": "^6.1.1",
     "primeflex": "^3.3.1",
     "primeicons": "^6.0.1",
     "primereact": "^10.2.1",
-    "react-player": "^2.13.0"
+    "react-player": "^2.13.0",
+    "react-redux": "^9.0.3",
+    "redux-state-sync": "^3.1.4"
   },
   "devDependencies": {
     "@electron-toolkit/eslint-config": "^1.0.1",

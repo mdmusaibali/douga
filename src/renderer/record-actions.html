@@ -1,0 +1,22 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta
+      http-equiv="Content-Security-Policy"
+      content="default-src 'self'; script-src 'unsafe-inline'; style-src 'self' 'unsafe-inline'; media-src 'self' blob:"
+    />
+    <title>Douga - Record actions</title>
+  </head>
+  <body>
+    <button>Test</button>
+    <script type="module">
+      const { ipcRenderer } = electron
+      const button = document.querySelector('button')
+      button.addEventListener('click', () => {
+        console.log('CLICKED')
+        ipcRenderer.send('pause_recording')
+      })
+    </script>
+  </body>
+</html>

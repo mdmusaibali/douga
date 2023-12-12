@@ -2,8 +2,6 @@ import React, { useState, useRef } from 'react'
 import ReactLogo from './../../assets/multi-window.svg?react'
 import ReactPlayer from 'react-player'
 import VideoPlayerActions from './VideoPlayerActions'
-import { Slider } from 'primereact/slider'
-import { Button } from 'primereact/button'
 
 function VideoPlayer({ videoChunks, onSave, onStartOver }) {
   const chunkAvailable = Array.isArray(videoChunks) && videoChunks.length > 0
@@ -37,6 +35,7 @@ function VideoPlayer({ videoChunks, onSave, onStartOver }) {
     setState({ seeking: false })
     if (playerRef.current) {
       // TODO use target instead of state below
+      console.log("MSB SEEK TO ",playerState.played)
       playerRef.current.seekTo(parseFloat(playerState.played))
     }
   }

@@ -14,13 +14,14 @@ function RecordActions({
   isRecording,
   isPaused,
   onResumeRecord,
-  onPauseRecord
+  onPauseRecord,
+  showRecordTimer = true
 }) {
   return (
-    <div className="flex gap-3">
+    <div className="flex gap-3 align-items-center">
       {isRecording && (
         <div className="flex flex-column">
-          <RecordTimer isRecording={isRecording} isPaused={isPaused} />
+          {showRecordTimer && <RecordTimer isRecording={isRecording} isPaused={isPaused} />}
           <p className="my-0 text-s font-light">Recording {selectedSource.name}</p>
         </div>
       )}
