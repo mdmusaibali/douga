@@ -1,4 +1,4 @@
-import React, { useState, useRef } from 'react'
+import React, { useState, useRef, useEffect } from 'react'
 import ReactLogo from './../../assets/multi-window.svg?react'
 import ReactPlayer from 'react-player'
 import VideoPlayerActions from './VideoPlayerActions'
@@ -8,10 +8,16 @@ function VideoPlayer({ videoChunks, onSave, onStartOver }) {
   const playerRef = useRef(null)
 
   const [playerState, setPlayerState] = useState({
-    url: chunkAvailable ? URL.createObjectURL(videoChunks[0]) : null,
+    url: null,
     playing: true,
     played: 0
   })
+
+  useEffect(() => {
+    if (chunkAvailable) {
+      setState({ url: URL.createObjectURL(videoChunks[0]) })
+    }
+  }, [chunkAvailable])
 
   const handleProgress = (state) => {
     if (!playerState.seeking) {
@@ -35,7 +41,7 @@ function VideoPlayer({ videoChunks, onSave, onStartOver }) {
     setState({ seeking: false })
     if (playerRef.current) {
       // TODO use target instead of state below
-      console.log("MSB SEEK TO ",playerState.played)
+      console.log('MSB SEEK TO ', playerState.played)
       playerRef.current.seekTo(parseFloat(playerState.played))
     }
   }

@@ -22,7 +22,9 @@ function RecordActions({
       {isRecording && (
         <div className="flex flex-column">
           {showRecordTimer && <RecordTimer isRecording={isRecording} isPaused={isPaused} />}
-          <p className="my-0 text-s font-light">Recording {selectedSource.name}</p>
+          {selectedSource && (
+            <p className="my-0 text-s font-light">Recording {selectedSource.name}</p>
+          )}
         </div>
       )}
       {showScreenOptions && (

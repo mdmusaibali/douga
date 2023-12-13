@@ -1,11 +1,6 @@
 import { createSlice } from '@reduxjs/toolkit'
 
 const initialState = {
-  mediaRecorder: null,
-  videoChunks: [],
-  stream: null,
-  sources: [],
-  selectedSource: null,
   isRecording: false,
   isPaused: false,
   isShowingSaveOptions: false
@@ -15,21 +10,6 @@ const recorderSlice = createSlice({
   name: 'video',
   initialState,
   reducers: {
-    setMediaRecorder(state, { payload }) {
-      state.mediaRecorder = payload
-    },
-    setVideoChunks(state, { payload }) {
-      state.videoChunks = payload
-    },
-    setStream(state, { payload }) {
-      state.stream = payload
-    },
-    setSources(state, { payload }) {
-      state.sources = payload
-    },
-    setSelectedSource(state, { payload }) {
-      state.selectedSource = payload
-    },
     setIsRecording(state, { payload }) {
       state.isRecording = payload
     },
@@ -38,6 +18,11 @@ const recorderSlice = createSlice({
     },
     setIsShowingSaveOptions(state, { payload }) {
       state.isShowingSaveOptions = payload
+    },
+    setState(state, { payload }) {
+      Object.entries(payload).forEach(([key, value]) => {
+        state[key] = value
+      })
     }
   }
 })

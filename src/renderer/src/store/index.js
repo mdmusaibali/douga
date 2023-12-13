@@ -5,7 +5,8 @@ import { recorderReducer } from './slice/recorderSlice'
 export const store = configureStore({
   reducer: {
     recorder: recorderReducer
-  }
-  // middleware: () => [createStateSyncMiddleware()]
+  },
+  middleware: () => [createStateSyncMiddleware({})]
 })
+// initStateWithPrevTab(store)
 initMessageListener(store)

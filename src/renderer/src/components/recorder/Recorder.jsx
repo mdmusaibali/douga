@@ -1,9 +1,11 @@
-import { useEffect, useState } from 'react'
+import { useCallback, useEffect, useState } from 'react'
 import { channels } from '../../../../shared'
 import VideoStream from '../video/VideoStream'
 import RecordActions from './RecordActions'
 import styles from './Recorder.module.scss'
 import VideoPlayer from '../video/VideoPlayer'
+import { useDispatch, useSelector } from 'react-redux'
+import { recorderActions } from '../../store/slice/recorderSlice'
 
 const { ipcRenderer } = electron
 
@@ -13,13 +15,11 @@ function Recorder() {
   const [stream, setStream] = useState(null)
   const [sources, setSources] = useState([])
   const [selectedSource, setSelectedSource] = useState(null)
-  const [isRecording, setIsRecording] = useState(false)
-  const [isPaused, setIsPaused] = useState(false)
-  const [isShowingSaveOptions, setIsShowingSaveOptions] = useState(false)
 
-  const handleSources = (_, sources) => {
-    setSources(sources)
-  }
+  const dispatch = useDispatch()
+  const state = useSelector((state) => state.recorder)
+  const { isRecording, isPaused, isShowingSaveOptions } = state
+  const { setIsPaused, setIsRecording, setIsShowingSaveOptions } = recorderActions
 
   useEffect(() => {
     handleStream(selectedSource)
@@ -60,28 +60,17 @@ function Recorder() {
     setSelectedSource(e.value)
   }
 
-  const getScreenSources = () => {
+  const getScreenSources = async () => {
     if (selectedSource) {
       setSelectedSource(null)
     }
-    ipcRenderer.send(channels.GET_SOURCES)
+    const screenSources = await ipcRenderer.invoke(channels.GET_SOURCES)
+    setSources(screenSources)
   }
-
-  useEffect(() => {
-    getScreenSources()
-    ipcRenderer.on(channels.GET_SOURCES, handleSources)
-    ipcRenderer.on(channels.PAUSE_RECORDING, pauseRecording)
-    ipcRenderer.on(channels.RESUME_RECORDING, resumeRecording)
-    // Clean the listener after the component is dismounted
-    return () => {
-      ipcRenderer.removeAllListeners()
-    }
-  }, [])
 
   const startRecording = () => {
     if (mediaRecorder) {
       mediaRecorder.start()
-      // ipcRenderer.send(channels.OPEN_RECORD_ACTION_WINDOW)
       console.log('Recording started')
     }
   }
@@ -89,35 +78,33 @@ function Recorder() {
   const stopRecording = () => {
     if (mediaRecorder) {
       mediaRecorder.stop()
-      // ipcRenderer.send(channels.CLOSE_RECORD_ACTION_WINDOW)
       console.log('Recording stopped')
     }
   }
 
-  const pauseRecording = () => {
-    console.log(mediaRecorder, sources, selectedSource)
+  const pauseRecording = useCallback(() => {
     if (mediaRecorder) {
       mediaRecorder.pause()
-      setIsPaused(true)
+      dispatch(setIsPaused(true))
       console.log('Recording paused')
     }
-  }
+  }, [mediaRecorder, setIsPaused])
 
-  const resumeRecording = () => {
+  const resumeRecording = useCallback(() => {
     if (mediaRecorder) {
       mediaRecorder.resume()
-      setIsPaused(false)
+      dispatch(setIsPaused(false))
       console.log('Recording resumed')
     }
-  }
+  }, [mediaRecorder, setIsPaused])
 
   const resetRecorder = () => {
     setVideoChunks([])
     setStream(null)
     setSelectedSource(null)
-    setIsRecording(false)
-    setIsPaused(false)
-    setIsShowingSaveOptions(false)
+    dispatch(setIsRecording(false))
+    dispatch(setIsPaused(false))
+    dispatch(setIsShowingSaveOptions(false))
   }
 
   const handleDataAvailable = (e) => {
@@ -126,12 +113,12 @@ function Recorder() {
   }
 
   const handleStart = () => {
-    setIsRecording(true)
+    dispatch(setIsRecording(true))
   }
 
   const handleStop = async () => {
-    setIsRecording(false)
-    setIsShowingSaveOptions(true)
+    dispatch(setIsRecording(false))
+    dispatch(setIsShowingSaveOptions(true))
   }
 
   const saveRecording = async () => {
@@ -142,10 +129,37 @@ function Recorder() {
     })
     const arrayBuffer = await blob.arrayBuffer()
 
-    ipcRenderer.send(channels.SAVE_FILE, arrayBuffer)
-    resetRecorder()
-    setIsShowingSaveOptions(false)
+    // TODO Add a loading handler here. Will be helpful for large files
+    const isSaved = await ipcRenderer.invoke(channels.SAVE_FILE, arrayBuffer)
+    if (isSaved) {
+      resetRecorder()
+      dispatch(setIsShowingSaveOptions(false))
+    }
   }
+
+  useEffect(() => {
+    getScreenSources()
+  }, [])
+
+  useEffect(() => {
+    ipcRenderer.on(channels.PAUSE_RECORDING, pauseRecording)
+    ipcRenderer.on(channels.RESUME_RECORDING, resumeRecording)
+    ipcRenderer.on(channels.STOP_RECORDING, stopRecording)
+    // Clean the listener after the component is dismounted
+    return () => {
+      ipcRenderer.removeListener(channels.PAUSE_RECORDING, pauseRecording)
+      ipcRenderer.removeListener(channels.RESUME_RECORDING, resumeRecording)
+      ipcRenderer.removeListener(channels.STOP_RECORDING, stopRecording)
+    }
+  }, [pauseRecording, resumeRecording])
+
+  useEffect(() => {
+    if (isRecording) {
+      ipcRenderer.invoke(channels.OPEN_RECORD_ACTION_WINDOW, state)
+    } else {
+      ipcRenderer.invoke(channels.CLOSE_RECORD_ACTION_WINDOW)
+    }
+  }, [isRecording])
 
   return (
     <div className={styles.recorder}>

@@ -13,7 +13,7 @@ function createWindow() {
   // Create the browser window.
   window1 = new BrowserWindow({
     show: false,
-    fullscreen: false,
+    fullscreen: true,
     autoHideMenuBar: true,
     ...(process.platform === 'linux' ? { icon } : {}),
     width: 1200,
@@ -47,7 +47,7 @@ function createWindow() {
   }
 }
 
-function createRecordActionsWindow() {
+function createRecordActionsWindow(initialState) {
   // Create the browser window.
   window2 = new BrowserWindow({
     show: false,
@@ -65,6 +65,7 @@ function createRecordActionsWindow() {
 
   window2.on('ready-to-show', () => {
     window2.show()
+    window2.webContents.send(channels.INITIALIZE_STATE, initialState)
   })
 
   if (is.dev) {
@@ -109,15 +110,15 @@ app.on('window-all-closed', () => {
 // In this file you can include the rest of your app"s specific main process
 // code. You can also put them in separate files and require them here.
 
-ipcMain.on(channels.GET_SOURCES, async (e) => {
+ipcMain.handle(channels.GET_SOURCES, async () => {
   const inputSources = await desktopCapturer.getSources({
     types: ['window', 'screen']
   })
 
-  e.sender.send(channels.GET_SOURCES, inputSources)
+  return inputSources
 })
 
-ipcMain.on(channels.SAVE_FILE, async (e, arrayBuffer) => {
+ipcMain.handle(channels.SAVE_FILE, async (_, arrayBuffer) => {
   try {
     const buffer = Buffer.from(arrayBuffer)
 
@@ -126,19 +127,29 @@ ipcMain.on(channels.SAVE_FILE, async (e, arrayBuffer) => {
       defaultPath: `dougavideo-${Date.now()}.webm`
     })
 
-    if (filePath) {
-      writeFile(filePath, buffer, () => console.log('video saved successfully!'))
+    if (!filePath) {
+      // this means user has cancelled the save
+      return false
     }
+
+    if (filePath) {
+      writeFile(filePath, buffer, () => {
+        console.log('File saved successfully')
+      })
+      return true
+    }
+    return false
   } catch (error) {
     console.log('Error saving video file ', error)
+    return false
   }
 })
 
-ipcMain.on(channels.OPEN_RECORD_ACTION_WINDOW, async (e) => {
-  createRecordActionsWindow()
+ipcMain.handle(channels.OPEN_RECORD_ACTION_WINDOW, async (e, initialState) => {
+  createRecordActionsWindow(initialState)
 })
 
-ipcMain.on(channels.CLOSE_RECORD_ACTION_WINDOW, async (e) => {
+ipcMain.handle(channels.CLOSE_RECORD_ACTION_WINDOW, async (e) => {
   if (window2) {
     window2.close()
   }
@@ -150,6 +161,10 @@ ipcMain.on(channels.PAUSE_RECORDING, async (e) => {
 
 ipcMain.on(channels.RESUME_RECORDING, async (e) => {
   window1.webContents.send(channels.RESUME_RECORDING)
+})
+
+ipcMain.on(channels.STOP_RECORDING, async (e) => {
+  window1.webContents.send(channels.STOP_RECORDING)
 })
 
 // Function to build the file tree recursively
