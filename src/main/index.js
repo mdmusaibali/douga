@@ -115,7 +115,10 @@ ipcMain.handle(channels.GET_SOURCES, async () => {
     types: ['window', 'screen']
   })
 
-  return inputSources
+  return inputSources.map((source) => {
+    delete source.thumbnail
+    return source
+  })
 })
 
 ipcMain.handle(channels.SAVE_FILE, async (_, arrayBuffer) => {

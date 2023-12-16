@@ -8,7 +8,7 @@ const { ipcRenderer } = electron
 
 function RecorderActionView() {
   const state = useSelector((state) => state.recorder)
-  const { isRecording, isPaused } = state
+  const { isRecording, isPaused, selectedSource } = state
   const dispatch = useDispatch()
 
   useEffect(() => {
@@ -47,7 +47,7 @@ function RecorderActionView() {
         onStopRecord={handleStopRecord}
         isRecording={isRecording}
         isPaused={isPaused}
-        selectedSource={{ name: 'Test' }}
+        selectedSource={selectedSource}
         showScreenOptions={false}
         showRecordTimer={false}
       />

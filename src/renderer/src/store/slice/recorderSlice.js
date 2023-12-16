@@ -3,7 +3,8 @@ import { createSlice } from '@reduxjs/toolkit'
 const initialState = {
   isRecording: false,
   isPaused: false,
-  isShowingSaveOptions: false
+  isShowingSaveOptions: false,
+  selectedSource: null
 }
 
 const recorderSlice = createSlice({
@@ -18,6 +19,9 @@ const recorderSlice = createSlice({
     },
     setIsShowingSaveOptions(state, { payload }) {
       state.isShowingSaveOptions = payload
+    },
+    setSelectedSource(state, { payload }) {
+      state.selectedSource = payload
     },
     setState(state, { payload }) {
       Object.entries(payload).forEach(([key, value]) => {

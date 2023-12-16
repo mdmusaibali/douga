@@ -14,16 +14,12 @@ function Recorder() {
   const [videoChunks, setVideoChunks] = useState([])
   const [stream, setStream] = useState(null)
   const [sources, setSources] = useState([])
-  const [selectedSource, setSelectedSource] = useState(null)
 
   const dispatch = useDispatch()
   const state = useSelector((state) => state.recorder)
-  const { isRecording, isPaused, isShowingSaveOptions } = state
-  const { setIsPaused, setIsRecording, setIsShowingSaveOptions } = recorderActions
-
-  useEffect(() => {
-    handleStream(selectedSource)
-  }, [selectedSource])
+  const { isRecording, isPaused, isShowingSaveOptions, selectedSource } = state
+  const { setIsPaused, setIsRecording, setIsShowingSaveOptions, setSelectedSource } =
+    recorderActions
 
   async function handleStream(source) {
     if (source) {
@@ -57,12 +53,13 @@ function Recorder() {
   }
 
   async function onChooseSource(e) {
-    setSelectedSource(e.value)
+    dispatch(setSelectedSource(e.value))
+    handleStream(e.value)
   }
 
   const getScreenSources = async () => {
     if (selectedSource) {
-      setSelectedSource(null)
+      dispatch(setSelectedSource(null))
     }
     const screenSources = await ipcRenderer.invoke(channels.GET_SOURCES)
     setSources(screenSources)
@@ -75,36 +72,40 @@ function Recorder() {
     }
   }
 
-  const stopRecording = () => {
+  const stopRecording = useCallback(() => {
+    console.log('STOP')
     if (mediaRecorder) {
       mediaRecorder.stop()
-      console.log('Recording stopped')
+      // console.log('Recording stopped')
     }
-  }
+  }, [mediaRecorder])
 
   const pauseRecording = useCallback(() => {
-    if (mediaRecorder) {
+    console.log('PAUSE', mediaRecorder)
+    if (mediaRecorder && mediaRecorder.state !== 'inactive') {
       mediaRecorder.pause()
       dispatch(setIsPaused(true))
-      console.log('Recording paused')
+      // console.log('Recording paused')
     }
   }, [mediaRecorder, setIsPaused])
 
   const resumeRecording = useCallback(() => {
-    if (mediaRecorder) {
+    console.log('RESUME')
+    if (mediaRecorder && mediaRecorder.state !== 'inactive') {
       mediaRecorder.resume()
       dispatch(setIsPaused(false))
-      console.log('Recording resumed')
+      // console.log('Recording resumed')
     }
   }, [mediaRecorder, setIsPaused])
 
   const resetRecorder = () => {
     setVideoChunks([])
     setStream(null)
-    setSelectedSource(null)
+    dispatch(setSelectedSource(null))
     dispatch(setIsRecording(false))
     dispatch(setIsPaused(false))
     dispatch(setIsShowingSaveOptions(false))
+    setMediaRecorder(null)
   }
 
   const handleDataAvailable = (e) => {
@@ -142,16 +143,16 @@ function Recorder() {
   }, [])
 
   useEffect(() => {
-    ipcRenderer.on(channels.PAUSE_RECORDING, pauseRecording)
-    ipcRenderer.on(channels.RESUME_RECORDING, resumeRecording)
-    ipcRenderer.on(channels.STOP_RECORDING, stopRecording)
+    let removePauseListener = ipcRenderer.on(channels.PAUSE_RECORDING, pauseRecording)
+    let removeResumeListener = ipcRenderer.on(channels.RESUME_RECORDING, resumeRecording)
+    let removeStopListener = ipcRenderer.on(channels.STOP_RECORDING, stopRecording)
     // Clean the listener after the component is dismounted
     return () => {
-      ipcRenderer.removeListener(channels.PAUSE_RECORDING, pauseRecording)
-      ipcRenderer.removeListener(channels.RESUME_RECORDING, resumeRecording)
-      ipcRenderer.removeListener(channels.STOP_RECORDING, stopRecording)
+      removePauseListener()
+      removeResumeListener()
+      removeStopListener()
     }
-  }, [pauseRecording, resumeRecording])
+  }, [pauseRecording, resumeRecording, stopRecording, selectedSource, stream])
 
   useEffect(() => {
     if (isRecording) {
