@@ -1,6 +1,6 @@
 import React, { useEffect } from 'react'
 import RecordActions from '../components/recorder/RecordActions'
-import { channels } from '../../../shared'
+import { channels } from '../../../shared/channels'
 import { useDispatch, useSelector } from 'react-redux'
 import { recorderActions } from '../store/slice/recorderSlice'
 
@@ -28,15 +28,15 @@ function RecorderActionView() {
   }, [])
 
   const handlePauseRecord = () => {
-    ipcRenderer.send(channels.PAUSE_RECORDING)
+    ipcRenderer.invoke(channels.PAUSE_RECORDING)
   }
 
   const handleResumeRecord = () => {
-    ipcRenderer.send(channels.RESUME_RECORDING)
+    ipcRenderer.invoke(channels.RESUME_RECORDING)
   }
 
   const handleStopRecord = () => {
-    ipcRenderer.send(channels.STOP_RECORDING)
+    ipcRenderer.invoke(channels.STOP_RECORDING)
   }
 
   return (

@@ -7,5 +7,6 @@ export const channels = {
   PAUSE_RECORDING: 'pause_recording',
   RESUME_RECORDING: 'resume_recording',
   STOP_RECORDING: 'stop_recording',
-  INITIALIZE_STATE: 'initialize_state'
+  INITIALIZE_STATE: 'initialize_state',
+  GET_DIR_FILES: 'get_dir_files'
 }

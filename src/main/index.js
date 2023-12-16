@@ -1,9 +1,10 @@
 import { app, shell, BrowserWindow, ipcMain, desktopCapturer, dialog } from 'electron'
-import { writeFile, readdirSync, statSync } from 'fs'
+import { writeFile } from 'fs'
 import { join } from 'path'
 import { electronApp, optimizer, is } from '@electron-toolkit/utils'
 import icon from '../../resources/icon.png?asset'
-import { channels } from '../shared'
+import { channels } from '../shared/channels'
+import { buildFileTree, makeDougaDirectory } from '../shared/utils'
 
 // Windows
 let window1
@@ -110,6 +111,14 @@ app.on('window-all-closed', () => {
 // In this file you can include the rest of your app"s specific main process
 // code. You can also put them in separate files and require them here.
 
+// Make a Douga directory (if not present) to store all the recorded video
+try {
+  const videosPath = app.getPath('videos')
+  makeDougaDirectory(videosPath)
+} catch (error) {
+  console.log('Error making douga directory', error)
+}
+
 ipcMain.handle(channels.GET_SOURCES, async () => {
   const inputSources = await desktopCapturer.getSources({
     types: ['window', 'screen']
@@ -158,34 +167,20 @@ ipcMain.handle(channels.CLOSE_RECORD_ACTION_WINDOW, async (e) => {
   }
 })
 
-ipcMain.on(channels.PAUSE_RECORDING, async (e) => {
+ipcMain.handle(channels.PAUSE_RECORDING, async (e) => {
   window1.webContents.send(channels.PAUSE_RECORDING)
 })
 
-ipcMain.on(channels.RESUME_RECORDING, async (e) => {
+ipcMain.handle(channels.RESUME_RECORDING, async (e) => {
   window1.webContents.send(channels.RESUME_RECORDING)
 })
 
-ipcMain.on(channels.STOP_RECORDING, async (e) => {
+ipcMain.handle(channels.STOP_RECORDING, async (e) => {
   window1.webContents.send(channels.STOP_RECORDING)
 })
 
-// Function to build the file tree recursively
-function buildFileTree(directoryPath) {
-  const files = readdirSync(directoryPath)
-  const children = files.map((fileName) => {
-    const filePath = path.join(directoryPath, fileName)
-    const stats = statSync(filePath)
-    if (stats.isDirectory()) {
-      return {
-        name: fileName,
-        children: buildFileTree(filePath)
-      }
-    } else {
-      return {
-        name: fileName
-      }
-    }
-  })
-  return children
-}
+ipcMain.handle(channels.GET_DIR_FILES, async () => {
+  const videosPath = app.getPath('videos')
+  const tree = buildFileTree(videosPath)
+  return tree
+})

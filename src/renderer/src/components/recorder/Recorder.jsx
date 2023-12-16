@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useState } from 'react'
-import { channels } from '../../../../shared'
+import { channels } from '../../../../shared/channels'
 import VideoStream from '../video/VideoStream'
 import RecordActions from './RecordActions'
 import styles from './Recorder.module.scss'
@@ -73,7 +73,6 @@ function Recorder() {
   }
 
   const stopRecording = useCallback(() => {
-    console.log('STOP')
     if (mediaRecorder) {
       mediaRecorder.stop()
       // console.log('Recording stopped')
@@ -81,7 +80,6 @@ function Recorder() {
   }, [mediaRecorder])
 
   const pauseRecording = useCallback(() => {
-    console.log('PAUSE', mediaRecorder)
     if (mediaRecorder && mediaRecorder.state !== 'inactive') {
       mediaRecorder.pause()
       dispatch(setIsPaused(true))
@@ -90,7 +88,6 @@ function Recorder() {
   }, [mediaRecorder, setIsPaused])
 
   const resumeRecording = useCallback(() => {
-    console.log('RESUME')
     if (mediaRecorder && mediaRecorder.state !== 'inactive') {
       mediaRecorder.resume()
       dispatch(setIsPaused(false))
