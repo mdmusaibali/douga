@@ -1,6 +1,6 @@
+import { Outlet } from 'react-router-dom'
 import CloudFiles from '../components/files/CloudFiles'
 import LocalFiles from '../components/files/LocalFiles'
-import Recorder from '../components/recorder/Recorder'
 import styles from './Home.module.scss'
 import { Divider } from 'primereact/divider'
 
@@ -14,7 +14,7 @@ function Home() {
       </div>
       <Divider layout="vertical" className="mx-0" />
       <div className={styles.home__main}>
-        <Recorder />
+        <Outlet />
       </div>
     </div>
   )

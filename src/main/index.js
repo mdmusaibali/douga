@@ -1,10 +1,10 @@
-import { app, shell, BrowserWindow, ipcMain, desktopCapturer, dialog } from 'electron'
+import { app, shell, BrowserWindow, ipcMain, desktopCapturer, dialog, protocol } from 'electron'
 import { writeFile } from 'fs'
 import { join } from 'path'
 import { electronApp, optimizer, is } from '@electron-toolkit/utils'
 import icon from '../../resources/icon.png?asset'
 import { channels } from '../shared/channels'
-import { buildFileTree, makeDougaDirectory } from '../shared/utils'
+import { buildFileTree, makeDougaDirectoryIfNotPresent } from '../shared/utils'
 
 // Windows
 let window1
@@ -14,7 +14,7 @@ function createWindow() {
   // Create the browser window.
   window1 = new BrowserWindow({
     show: false,
-    fullscreen: true,
+    fullscreen: false,
     autoHideMenuBar: true,
     ...(process.platform === 'linux' ? { icon } : {}),
     width: 1200,
@@ -27,6 +27,7 @@ function createWindow() {
   })
 
   window1.on('ready-to-show', () => {
+    window1.maximize()
     window1.show()
   })
 
@@ -55,8 +56,9 @@ function createRecordActionsWindow(initialState) {
     fullscreen: false,
     autoHideMenuBar: true,
     width: 750,
-    height: 56,
-    // frame: false,
+    height: 65,
+    frame: false,
+    resizable: false,
     webPreferences: {
       preload: join(__dirname, '../preload/index.js'),
       sandbox: false,
@@ -70,9 +72,9 @@ function createRecordActionsWindow(initialState) {
   })
 
   if (is.dev) {
-    window2.loadURL(process.env['ELECTRON_RENDERER_URL'] + '/login')
+    window2.loadURL(process.env['ELECTRON_RENDERER_URL'] + '/vid-action-preview')
   } else {
-    window2.loadFile(join(__dirname, '../renderer/record-actions.html'))
+    window2.loadFile(join(__dirname, '../renderer/index.html#/vid-action-preview'))
   }
 }
 
@@ -88,6 +90,16 @@ app.whenReady().then(() => {
   // see https://github.com/alex8088/electron-toolkit/tree/master/packages/utils
   app.on('browser-window-created', (_, window) => {
     optimizer.watchWindowShortcuts(window)
+  })
+
+  protocol.registerFileProtocol('my-video-protocol', (request, callback) => {
+    const url = request.url.replace('my-video-protocol://getMediaFile/', '')
+    try {
+      return callback(url)
+    } catch (error) {
+      console.error(error)
+      return callback(404)
+    }
   })
 
   createWindow()
@@ -111,13 +123,7 @@ app.on('window-all-closed', () => {
 // In this file you can include the rest of your app"s specific main process
 // code. You can also put them in separate files and require them here.
 
-// Make a Douga directory (if not present) to store all the recorded video
-try {
-  const videosPath = app.getPath('videos')
-  makeDougaDirectory(videosPath)
-} catch (error) {
-  console.log('Error making douga directory', error)
-}
+makeDougaDirectoryIfNotPresent()
 
 ipcMain.handle(channels.GET_SOURCES, async () => {
   const inputSources = await desktopCapturer.getSources({
@@ -132,17 +138,23 @@ ipcMain.handle(channels.GET_SOURCES, async () => {
 
 ipcMain.handle(channels.SAVE_FILE, async (_, arrayBuffer) => {
   try {
+    makeDougaDirectoryIfNotPresent()
     const buffer = Buffer.from(arrayBuffer)
+    const videosPath = app.getPath('videos')
+    const dougaPath = videosPath + '/Douga'
+    const videoName = dougaPath + `/dougavideo-${Date.now()}.webm`
 
     const { filePath } = await dialog.showSaveDialog({
       buttonLabel: 'Save video',
-      defaultPath: `dougavideo-${Date.now()}.webm`
+      defaultPath: videoName
     })
 
     if (!filePath) {
       // this means user has cancelled the save
       return false
     }
+
+    console.log('File Path ', filePath)
 
     if (filePath) {
       writeFile(filePath, buffer, () => {
@@ -156,6 +168,27 @@ ipcMain.handle(channels.SAVE_FILE, async (_, arrayBuffer) => {
     return false
   }
 })
+
+// ipcMain.handle(channels.SAVE_FILE, async (_, arrayBuffer) => {
+//   try {
+//     makeDougaDirectoryIfNotPresent()
+//     const buffer = Buffer.from(arrayBuffer)
+//     const videosPath = app.getPath('videos')
+//     const dougaPath = videosPath + '/Douga'
+//     const videoName = dougaPath + `/dougavid-${new Date().toISOString()}.webm`
+
+//     if (dougaPath) {
+//       writeFile(videoName, buffer, () => {
+//         console.log('File saved successfully')
+//       })
+//       return true
+//     }
+//     return false
+//   } catch (error) {
+//     console.log('Error saving video file ', error)
+//     return false
+//   }
+// })
 
 ipcMain.handle(channels.OPEN_RECORD_ACTION_WINDOW, async (e, initialState) => {
   createRecordActionsWindow(initialState)
@@ -179,8 +212,8 @@ ipcMain.handle(channels.STOP_RECORDING, async (e) => {
   window1.webContents.send(channels.STOP_RECORDING)
 })
 
-ipcMain.handle(channels.GET_DIR_FILES, async () => {
+ipcMain.on(channels.GET_DIR_FILES, async (e) => {
   const videosPath = app.getPath('videos')
   const tree = buildFileTree(videosPath)
-  return tree
+  e.sender.send(channels.GET_DIR_FILES, tree)
 })

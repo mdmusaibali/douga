@@ -132,6 +132,7 @@ function Recorder() {
     if (isSaved) {
       resetRecorder()
       dispatch(setIsShowingSaveOptions(false))
+      ipcRenderer.send(channels.GET_DIR_FILES)
     }
   }
 

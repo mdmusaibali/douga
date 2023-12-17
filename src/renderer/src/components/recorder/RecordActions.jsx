@@ -20,7 +20,7 @@ function RecordActions({
   return (
     <div className="flex gap-3 align-items-center">
       {isRecording && (
-        <div className="flex flex-column">
+        <div className="flex flex-column flex-1 draggable-area prevent-select" >
           {showRecordTimer && <RecordTimer isRecording={isRecording} isPaused={isPaused} />}
           {selectedSource && (
             <p className="my-0 text-s font-light">Recording {selectedSource.name}</p>
