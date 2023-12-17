@@ -1,7 +1,7 @@
-import { createBrowserRouter, RouterProvider } from 'react-router-dom'
+import { createHashRouter, RouterProvider } from 'react-router-dom'
 import routes from './routes'
 
-const router = createBrowserRouter(routes)
+const router = createHashRouter(routes)
 
 function App() {
   return <RouterProvider router={router} />

@@ -50,7 +50,6 @@ function createWindow() {
 }
 
 function createRecordActionsWindow(initialState) {
-  // Create the browser window.
   window2 = new BrowserWindow({
     show: false,
     fullscreen: false,
@@ -72,9 +71,11 @@ function createRecordActionsWindow(initialState) {
   })
 
   if (is.dev) {
-    window2.loadURL(process.env['ELECTRON_RENDERER_URL'] + '/vid-action-preview')
+    window2.loadURL(process.env['ELECTRON_RENDERER_URL'] + '/#vid-action-preview')
   } else {
-    window2.loadFile(join(__dirname, '../renderer/index.html#/vid-action-preview'))
+    window2.loadFile(join(__dirname, '../renderer/index.html'), {
+      hash: 'vid-action-preview'
+    })
   }
 }
 
