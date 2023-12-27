@@ -15,12 +15,14 @@ function RecordActions({
   isPaused,
   onResumeRecord,
   onPauseRecord,
-  showRecordTimer = true
+  showRecordTimer = true,
+  recordAudio,
+  setRecordAudio
 }) {
   return (
     <div className="flex gap-3 align-items-center">
       {isRecording && (
-        <div className="flex flex-column flex-1 draggable-area prevent-select" >
+        <div className="flex flex-column flex-1 draggable-area prevent-select">
           {showRecordTimer && <RecordTimer isRecording={isRecording} isPaused={isPaused} />}
           {selectedSource && (
             <p className="my-0 text-s font-light">Recording {selectedSource.name}</p>
@@ -44,6 +46,16 @@ function RecordActions({
             placeholder="Select a Screen"
             showClear
             style={{ minWidth: '400px' }}
+          />
+          <Button
+            icon={recordAudio ? 'fa-solid fa-microphone' : 'fa-solid fa-microphone-slash'}
+            rounded
+            text
+            severity={recordAudio ? 'danger' : 'secondary'}
+            aria-label="Cancel"
+            onClick={() => {
+              setRecordAudio((prev) => !prev)
+            }}
           />
         </>
       )}

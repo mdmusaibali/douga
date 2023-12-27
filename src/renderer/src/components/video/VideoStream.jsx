@@ -15,7 +15,7 @@ function VideoStream({ stream }) {
     <div className="w-full h-full">
       {stream && (
         <div className="border-round border-1 surface-border p-4 surface-card flex justify-content-center align-items-center flex-column w-full h-full">
-          <video ref={videoRef} autoPlay className="w-full h-full"></video>
+          <video ref={videoRef} muted autoPlay className="w-full h-full"></video>
         </div>
       )}
       {!stream && (

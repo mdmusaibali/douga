@@ -14,6 +14,7 @@ function Recorder() {
   const [videoChunks, setVideoChunks] = useState([])
   const [stream, setStream] = useState(null)
   const [sources, setSources] = useState([])
+  const [recordAudio, setRecordAudio] = useState(false)
 
   const dispatch = useDispatch()
   const state = useSelector((state) => state.recorder)
@@ -24,7 +25,7 @@ function Recorder() {
   async function handleStream(source) {
     if (source) {
       try {
-        const stream = await navigator.mediaDevices.getUserMedia({
+        const screenStream = await navigator.mediaDevices.getUserMedia({
           audio: false,
           video: {
             mandatory: {
@@ -33,6 +34,20 @@ function Recorder() {
             }
           }
         })
+        let recorderStreams = [...screenStream.getTracks()]
+        if (recordAudio) {
+          const audioStream = await navigator.mediaDevices.getUserMedia({
+            audio: {
+              echoCancellation: true,
+              noiseSuppression: true,
+              sampleRate: 44100
+            }
+          })
+          recorderStreams.push(...audioStream.getTracks())
+        }
+
+        const stream = new MediaStream(recorderStreams)
+
         // Create the Media Recorder
         const options = { mimeType: 'video/webm; codecs=vp9' }
         const mediaRecorder = new MediaRecorder(stream, options)
@@ -131,7 +146,6 @@ function Recorder() {
     const isSaved = await ipcRenderer.invoke(channels.SAVE_FILE, arrayBuffer)
     if (isSaved) {
       resetRecorder()
-      dispatch(setIsShowingSaveOptions(false))
       ipcRenderer.send(channels.GET_DIR_FILES)
     }
   }
@@ -186,6 +200,8 @@ function Recorder() {
             isRecording={isRecording}
             isPaused={isPaused}
             showScreenOptions={!isRecording}
+            recordAudio={recordAudio}
+            setRecordAudio={setRecordAudio}
           />
         </div>
       )}
