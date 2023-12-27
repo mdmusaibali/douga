@@ -1,11 +1,9 @@
 import React, { useState, useEffect, useCallback } from 'react'
-import { Tree } from 'primereact/tree'
-import { NodeService } from '../../service/NodeService'
 import { Card } from 'primereact/card'
 import styles from './LocalFiles.module.scss'
-import { Toolbar } from 'primereact/toolbar'
 import { channels } from '../../../../shared/channels'
-import { useNavigate, useNavigation } from 'react-router-dom'
+import { useNavigate } from 'react-router-dom'
+import FileTree from '../tree/FileTree'
 
 const { ipcRenderer } = electron
 
@@ -44,8 +42,7 @@ export default function LocalFiles() {
 
   return (
     <Card className={styles.localfiles}>
-      <Toolbar start={<>Local Files</>} />
-      <Tree value={tree} className="w-full" onNodeClick={handleNodeClick} selectionMode="single" />
+      <FileTree nodes={tree} onNodeClick={handleNodeClick} toolbarTitle="Local Files" />
     </Card>
   )
 }

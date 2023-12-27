@@ -9,8 +9,9 @@ function Home() {
     <div className={styles.home}>
       <div className={styles.home__aside}>
         <LocalFiles />
-        <Divider className="my-0" />
-        <CloudFiles />
+        {/* Adding Cloud files soon */}
+        {/* <Divider className="my-0" />
+        <CloudFiles /> */}
       </div>
       <Divider layout="vertical" className="mx-0" />
       <div className={styles.home__main}>

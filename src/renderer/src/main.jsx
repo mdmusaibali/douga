@@ -10,6 +10,10 @@ import 'primeflex/primeflex.css'
 import { Provider } from 'react-redux'
 import { store } from './store'
 
+//fontawesome
+import '@fortawesome/fontawesome-free/css/fontawesome.css'
+import '@fortawesome/fontawesome-free/css/solid.css'
+
 ReactDOM.createRoot(document.getElementById('root')).render(
   <Provider store={store}>
     <PrimeReactProvider>
