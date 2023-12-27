@@ -16,8 +16,8 @@ function RecordActions({
   onResumeRecord,
   onPauseRecord,
   showRecordTimer = true,
-  recordAudio,
-  setRecordAudio
+  isRecordingAudio,
+  toggleRecordingAudio
 }) {
   return (
     <div className="flex gap-3 align-items-center">
@@ -47,18 +47,16 @@ function RecordActions({
             showClear
             style={{ minWidth: '400px' }}
           />
-          <Button
-            icon={recordAudio ? 'fa-solid fa-microphone' : 'fa-solid fa-microphone-slash'}
-            rounded
-            text
-            severity={recordAudio ? 'danger' : 'secondary'}
-            aria-label="Cancel"
-            onClick={() => {
-              setRecordAudio((prev) => !prev)
-            }}
-          />
         </>
       )}
+      <Button
+        icon={isRecordingAudio ? 'fa-solid fa-microphone' : 'fa-solid fa-microphone-slash'}
+        rounded
+        text
+        severity={isRecordingAudio ? 'danger' : 'secondary'}
+        aria-label="Cancel"
+        onClick={toggleRecordingAudio}
+      />
       {selectedSource && !isRecording && (
         <Button label="Record" severity="danger" size="small" onClick={onStartRecord} />
       )}
