@@ -8,7 +8,7 @@ const { ipcRenderer } = electron
 
 function RecorderActionView() {
   const state = useSelector((state) => state.recorder)
-  const { isRecording, isPaused, selectedSource } = state
+  const { isRecording, isPaused, selectedSource, isRecordingAudio } = state
   const dispatch = useDispatch()
 
   useEffect(() => {
@@ -39,6 +39,10 @@ function RecorderActionView() {
     ipcRenderer.invoke(channels.STOP_RECORDING)
   }
 
+  const toggleRecordingAudio = () => {
+    dispatch(recorderActions.setIsRecordingAudio(!isRecordingAudio))
+  }
+
   return (
     <div className="px-2 py-2 mt-1">
       <RecordActions
@@ -50,6 +54,8 @@ function RecorderActionView() {
         selectedSource={selectedSource}
         showScreenOptions={false}
         showRecordTimer={false}
+        isRecordingAudio={isRecordingAudio}
+        toggleRecordingAudio={toggleRecordingAudio}
       />
     </div>
   )
