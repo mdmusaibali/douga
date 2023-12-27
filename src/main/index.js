@@ -55,7 +55,7 @@ function createRecordActionsWindow(initialState) {
     fullscreen: false,
     autoHideMenuBar: true,
     width: 750,
-    height: 65,
+    height: 70,
     frame: false,
     resizable: false,
     webPreferences: {
