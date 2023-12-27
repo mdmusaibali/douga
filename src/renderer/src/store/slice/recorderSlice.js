@@ -4,7 +4,8 @@ const initialState = {
   isRecording: false,
   isPaused: false,
   isShowingSaveOptions: false,
-  selectedSource: null
+  selectedSource: null,
+  isRecordingAudio: false
 }
 
 const recorderSlice = createSlice({
@@ -19,6 +20,9 @@ const recorderSlice = createSlice({
     },
     setIsShowingSaveOptions(state, { payload }) {
       state.isShowingSaveOptions = payload
+    },
+    setIsRecordingAudio(state, { payload }) {
+      state.isRecordingAudio = payload
     },
     setSelectedSource(state, { payload }) {
       state.selectedSource = payload

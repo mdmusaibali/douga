@@ -14,13 +14,17 @@ function Recorder() {
   const [videoChunks, setVideoChunks] = useState([])
   const [stream, setStream] = useState(null)
   const [sources, setSources] = useState([])
-  const [recordAudio, setRecordAudio] = useState(false)
 
   const dispatch = useDispatch()
   const state = useSelector((state) => state.recorder)
-  const { isRecording, isPaused, isShowingSaveOptions, selectedSource } = state
-  const { setIsPaused, setIsRecording, setIsShowingSaveOptions, setSelectedSource } =
-    recorderActions
+  const { isRecording, isPaused, isShowingSaveOptions, selectedSource, isRecordingAudio } = state
+  const {
+    setIsPaused,
+    setIsRecording,
+    setIsShowingSaveOptions,
+    setSelectedSource,
+    setIsRecordingAudio
+  } = recorderActions
 
   async function handleStream(source) {
     if (source) {
@@ -34,19 +38,19 @@ function Recorder() {
             }
           }
         })
-        let recorderStreams = [...screenStream.getTracks()]
-        if (recordAudio) {
-          const audioStream = await navigator.mediaDevices.getUserMedia({
-            audio: {
-              echoCancellation: true,
-              noiseSuppression: true,
-              sampleRate: 44100
-            }
-          })
-          recorderStreams.push(...audioStream.getTracks())
-        }
+        const audioStream = await navigator.mediaDevices.getUserMedia({
+          audio: {
+            echoCancellation: true,
+            noiseSuppression: true,
+            sampleRate: 44100
+          },
+          video: false
+        })
+        const stream = new MediaStream([...screenStream.getTracks(), ...audioStream.getTracks()])
 
-        const stream = new MediaStream(recorderStreams)
+        //enabling/disabling audio
+        const audioTracks = stream.getAudioTracks()
+        if (audioTracks.length > 0) audioTracks[0].enabled = isRecordingAudio
 
         // Create the Media Recorder
         const options = { mimeType: 'video/webm; codecs=vp9' }
@@ -120,6 +124,10 @@ function Recorder() {
     setMediaRecorder(null)
   }
 
+  const toggleRecordingAudio = () => {
+    dispatch(setIsRecordingAudio(!isRecordingAudio))
+  }
+
   const handleDataAvailable = (e) => {
     console.log('Pushing chunk ', e.data)
     setVideoChunks((prevChunks) => [...prevChunks, e.data])
@@ -153,6 +161,15 @@ function Recorder() {
   useEffect(() => {
     getScreenSources()
   }, [])
+
+  useEffect(() => {
+    if (!stream) return
+    const audioTracks = stream.getAudioTracks() // or false to mute it.
+    if (audioTracks.length < 1) return
+
+    audioTracks[0].enabled = isRecordingAudio
+    console.log('MSB AUDIO ', isRecordingAudio)
+  }, [isRecordingAudio])
 
   useEffect(() => {
     let removePauseListener = ipcRenderer.on(channels.PAUSE_RECORDING, pauseRecording)
@@ -200,8 +217,8 @@ function Recorder() {
             isRecording={isRecording}
             isPaused={isPaused}
             showScreenOptions={!isRecording}
-            recordAudio={recordAudio}
-            setRecordAudio={setRecordAudio}
+            isRecordingAudio={isRecordingAudio}
+            toggleRecordingAudio={toggleRecordingAudio}
           />
         </div>
       )}
