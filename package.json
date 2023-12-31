@@ -28,7 +28,8 @@
     "primeicons": "^6.0.1",
     "primereact": "^10.2.1",
     "react-redux": "^9.0.3",
-    "redux-state-sync": "^3.1.4"
+    "redux-state-sync": "^3.1.4",
+    "webm-duration-fix": "^1.0.4"
   },
   "devDependencies": {
     "@electron-toolkit/eslint-config": "^1.0.1",

@@ -6,6 +6,7 @@ import styles from './Recorder.module.scss'
 import VideoPlayer from '../video/VideoPlayer'
 import { useDispatch, useSelector } from 'react-redux'
 import { recorderActions } from '../../store/slice/recorderSlice'
+import fixWebmDuration from 'webm-duration-fix'
 
 const { ipcRenderer } = electron
 
@@ -128,9 +129,12 @@ function Recorder() {
     dispatch(setIsRecordingAudio(!isRecordingAudio))
   }
 
-  const handleDataAvailable = (e) => {
-    console.log('Pushing chunk ', e.data)
-    setVideoChunks((prevChunks) => [...prevChunks, e.data])
+  const handleDataAvailable = async (e) => {
+    // NOTE: Fixing the duration issues in video
+    const blob = await fixWebmDuration(e.data)
+    console.log('Pushing chunk ', blob)
+
+    setVideoChunks((prevChunks) => [...prevChunks, blob])
   }
 
   const handleStart = () => {
