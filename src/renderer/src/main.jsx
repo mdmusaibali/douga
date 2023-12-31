@@ -14,6 +14,9 @@ import { store } from './store'
 import '@fortawesome/fontawesome-free/css/fontawesome.css'
 import '@fortawesome/fontawesome-free/css/solid.css'
 
+// vidstack player
+import '@vidstack/react/player/styles/default/theme.css';
+
 ReactDOM.createRoot(document.getElementById('root')).render(
   <Provider store={store}>
     <PrimeReactProvider>
