@@ -14,7 +14,7 @@ export default [
       },
       {
         path: 'video/:src',
-        element: <VideoPlayer showControls={true} />
+        element: <VideoPlayer playLocalFile={true} />
       }
     ]
   },
