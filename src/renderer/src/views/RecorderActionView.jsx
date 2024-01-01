@@ -8,7 +8,7 @@ const { ipcRenderer } = electron
 
 function RecorderActionView() {
   const state = useSelector((state) => state.recorder)
-  const { isRecording, isPaused, selectedSource, isRecordingAudio } = state
+  const { isRecording, isPaused, selectedSource, isRecordingAudio, isShowingCamPreview } = state
   const dispatch = useDispatch()
 
   useEffect(() => {
@@ -43,8 +43,15 @@ function RecorderActionView() {
     dispatch(recorderActions.setIsRecordingAudio(!isRecordingAudio))
   }
 
+  const toggleShowCamPreview = () => {
+    dispatch(recorderActions.setIsShowingCamPreview(!isShowingCamPreview))
+  }
+
   return (
-    <div className="px-2 py-2 mt-1">
+    <div
+      className="border-1 surface-border px-2 py-2 mt-1"
+      style={{ backgroundColor: 'var(--surface-a)', borderRadius: 10, overflow: 'hidden' }}
+    >
       <RecordActions
         onPauseRecord={handlePauseRecord}
         onResumeRecord={handleResumeRecord}
@@ -56,6 +63,8 @@ function RecorderActionView() {
         showRecordTimer={false}
         isRecordingAudio={isRecordingAudio}
         toggleRecordingAudio={toggleRecordingAudio}
+        isShowingCamPreview={isShowingCamPreview}
+        toggleShowCamPreview={toggleShowCamPreview}
       />
     </div>
   )

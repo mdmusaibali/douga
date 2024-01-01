@@ -1,5 +1,6 @@
 import Recorder from '../components/recorder/Recorder'
 import VideoPlayer from '../components/video/VideoPlayer'
+import CamPreview from '../views/CamPreview'
 import Home from '../views/Home'
 import RecorderActionView from '../views/RecorderActionView'
 
@@ -21,5 +22,9 @@ export default [
   {
     path: '/vid-action-preview',
     element: <RecorderActionView />
+  },
+  {
+    path: '/cam-preview',
+    element: <CamPreview />
   }
 ]

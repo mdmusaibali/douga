@@ -8,5 +8,7 @@ export const channels = {
   RESUME_RECORDING: 'resume_recording',
   STOP_RECORDING: 'stop_recording',
   INITIALIZE_STATE: 'initialize_state',
-  GET_DIR_FILES: 'get_dir_files'
+  GET_DIR_FILES: 'get_dir_files',
+  OPEN_CAM_PREVIEW_WINDOW: 'open_cam_preview_window',
+  CLOSE_CAM_PREVIEW_WINDOW: 'close_cam_preview_window'
 }
