@@ -1,0 +1,11 @@
+.cam-preview {
+  height: 250px;
+  width: 250px;
+  border-radius: 100%;
+  overflow: hidden;
+  background: transparent !important;
+
+  & > video {
+    object-fit: cover;
+  }
+}

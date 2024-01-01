@@ -17,7 +17,9 @@ function RecordActions({
   onPauseRecord,
   showRecordTimer = true,
   isRecordingAudio,
-  toggleRecordingAudio
+  toggleRecordingAudio,
+  isShowingCamPreview,
+  toggleShowCamPreview
 }) {
   return (
     <div className="flex gap-3 align-items-center">
@@ -49,6 +51,7 @@ function RecordActions({
           />
         </>
       )}
+      {/* ---------- Always show --------- */}
       <Button
         icon={isRecordingAudio ? 'fa-solid fa-microphone' : 'fa-solid fa-microphone-slash'}
         rounded
@@ -57,6 +60,15 @@ function RecordActions({
         aria-label="Cancel"
         onClick={toggleRecordingAudio}
       />
+      <Button
+        icon={isShowingCamPreview ? 'fa-solid fa-video' : 'fa-solid fa-video-slash'}
+        rounded
+        text
+        severity={isShowingCamPreview ? 'danger' : 'secondary'}
+        aria-label="Cancel"
+        onClick={toggleShowCamPreview}
+      />
+      {/* ---------- Always show --------- */}
       {selectedSource && !isRecording && (
         <Button label="Record" severity="danger" size="small" onClick={onStartRecord} />
       )}

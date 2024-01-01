@@ -1,4 +1,13 @@
-import { app, shell, BrowserWindow, ipcMain, desktopCapturer, dialog, protocol } from 'electron'
+import {
+  app,
+  shell,
+  BrowserWindow,
+  ipcMain,
+  desktopCapturer,
+  dialog,
+  protocol,
+  screen
+} from 'electron'
 import { writeFile } from 'fs'
 import { join } from 'path'
 import { electronApp, optimizer, is } from '@electron-toolkit/utils'
@@ -9,6 +18,7 @@ import { buildFileTree, makeDougaDirectoryIfNotPresent } from '../shared/utils'
 // Windows
 let window1
 let window2
+let window3
 
 function createWindow() {
   // Create the browser window.
@@ -58,6 +68,7 @@ function createRecordActionsWindow(initialState) {
     height: 70,
     frame: false,
     resizable: false,
+    transparent: true,
     webPreferences: {
       preload: join(__dirname, '../preload/index.js'),
       sandbox: false,
@@ -70,11 +81,62 @@ function createRecordActionsWindow(initialState) {
     window2.webContents.send(channels.INITIALIZE_STATE, initialState)
   })
 
+  window2.on('close', () => {
+    window2 = null
+  })
+
+  window2.on('closed', () => {
+    window2 = null
+  })
+
   if (is.dev) {
     window2.loadURL(process.env['ELECTRON_RENDERER_URL'] + '/#vid-action-preview')
   } else {
     window2.loadFile(join(__dirname, '../renderer/index.html'), {
       hash: 'vid-action-preview'
+    })
+  }
+}
+
+function createCamPreviewWindow() {
+  let display = screen.getPrimaryDisplay()
+  let height = display.bounds.height
+  window3 = new BrowserWindow({
+    show: false,
+    fullscreen: false,
+    autoHideMenuBar: true,
+    width: 250,
+    height: 250,
+    frame: false,
+    resizable: false,
+    transparent: true,
+    x: 20,
+    y: height - 270,
+    webPreferences: {
+      preload: join(__dirname, '../preload/index.js'),
+      sandbox: false,
+      contextIsolation: true
+    }
+  })
+  window3.setAlwaysOnTop(true, 'screen')
+
+  window3.on('ready-to-show', () => {
+    window3.show()
+  })
+
+  window3.on('close', () => {
+    window3 = null
+  })
+
+  window3.on('closed', () => {
+    window3 = null
+  })
+
+  if (is.dev) {
+    window3.loadURL(process.env['ELECTRON_RENDERER_URL'] + '/#cam-preview')
+  } else {
+    window3.loadFile(join(__dirname, '../renderer/index.html'), {
+      hash: 'cam-preview'
     })
   }
 }
@@ -192,11 +254,11 @@ ipcMain.handle(channels.SAVE_FILE, async (_, arrayBuffer) => {
 // })
 
 ipcMain.handle(channels.OPEN_RECORD_ACTION_WINDOW, async (e, initialState) => {
-  createRecordActionsWindow(initialState)
+  if (!window2) createRecordActionsWindow(initialState)
 })
 
 ipcMain.handle(channels.CLOSE_RECORD_ACTION_WINDOW, async (e) => {
-  if (window2) {
+  if (window2 && window2.closable) {
     window2.close()
   }
 })
@@ -217,4 +279,14 @@ ipcMain.on(channels.GET_DIR_FILES, async (e) => {
   const videosPath = app.getPath('videos')
   const tree = buildFileTree(videosPath)
   e.sender.send(channels.GET_DIR_FILES, tree)
+})
+
+ipcMain.handle(channels.OPEN_CAM_PREVIEW_WINDOW, async () => {
+  if (!window3) createCamPreviewWindow()
+})
+
+ipcMain.handle(channels.CLOSE_CAM_PREVIEW_WINDOW, async () => {
+  if (window3 && window3.closable) {
+    window3.close()
+  }
 })

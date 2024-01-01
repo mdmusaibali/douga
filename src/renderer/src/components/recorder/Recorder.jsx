@@ -18,13 +18,21 @@ function Recorder() {
 
   const dispatch = useDispatch()
   const state = useSelector((state) => state.recorder)
-  const { isRecording, isPaused, isShowingSaveOptions, selectedSource, isRecordingAudio } = state
+  const {
+    isRecording,
+    isPaused,
+    isShowingSaveOptions,
+    selectedSource,
+    isRecordingAudio,
+    isShowingCamPreview
+  } = state
   const {
     setIsPaused,
     setIsRecording,
     setIsShowingSaveOptions,
     setSelectedSource,
-    setIsRecordingAudio
+    setIsRecordingAudio,
+    setIsShowingCamPreview
   } = recorderActions
 
   async function handleStream(source) {
@@ -129,6 +137,10 @@ function Recorder() {
     dispatch(setIsRecordingAudio(!isRecordingAudio))
   }
 
+  const toggleShowCamPreview = () => {
+    dispatch(setIsShowingCamPreview(!isShowingCamPreview))
+  }
+
   const handleDataAvailable = async (e) => {
     // NOTE: Fixing the duration issues in video
     const blob = await fixWebmDuration(e.data)
@@ -190,10 +202,21 @@ function Recorder() {
   useEffect(() => {
     if (isRecording) {
       ipcRenderer.invoke(channels.OPEN_RECORD_ACTION_WINDOW, state)
+      ipcRenderer.invoke(channels.OPEN_CAM_PREVIEW_WINDOW)
     } else {
       ipcRenderer.invoke(channels.CLOSE_RECORD_ACTION_WINDOW)
+      ipcRenderer.invoke(channels.CLOSE_CAM_PREVIEW_WINDOW)
     }
   }, [isRecording])
+
+  useEffect(() => {
+    if (!isRecording) return
+    if (isShowingCamPreview) {
+      ipcRenderer.invoke(channels.OPEN_CAM_PREVIEW_WINDOW)
+    } else {
+      ipcRenderer.invoke(channels.CLOSE_CAM_PREVIEW_WINDOW)
+    }
+  }, [isShowingCamPreview])
 
   return (
     <div className={styles.recorder}>
@@ -223,6 +246,8 @@ function Recorder() {
             showScreenOptions={!isRecording}
             isRecordingAudio={isRecordingAudio}
             toggleRecordingAudio={toggleRecordingAudio}
+            isShowingCamPreview={isShowingCamPreview}
+            toggleShowCamPreview={toggleShowCamPreview}
           />
         </div>
       )}
